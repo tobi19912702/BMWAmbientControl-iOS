@@ -1,0 +1,50 @@
+
+name: BMW iPhone IPA bauen
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ios:
+    runs-on: macos-15
+    timeout-minutes: 35
+    steps:
+      - name: Repository laden
+        uses: actions/checkout@v4
+
+      - name: Projekt entpacken
+        run: unzip -o BMWAmbientControl_GitHub_iOS_Ready.zip -d .
+
+      - name: Xcode-Projekt erzeugen
+        run: |
+          command -v xcodegen || brew install xcodegen
+          xcodegen generate --spec project.yml
+
+      - name: iPhone-App kompilieren
+        run: |
+          xcodebuild -project BMWAmbientControl.xcodeproj \
+            -scheme BMWAmbientControl \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build/DerivedData \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            build
+
+      - name: IPA erstellen
+        run: |
+          mkdir -p build/ipa/Payload
+          cp -R build/DerivedData/Build/Products/Release-iphoneos/BMWAmbientControl.app build/ipa/Payload/
+          (cd build/ipa && zip -q -r ../BMWAmbientControl-unsigned.ipa Payload)
+
+      - name: IPA bereitstellen
+        uses: actions/upload-artifact@v4
+        with:
+          name: BMWAmbientControl-unsigned-IPA
+          path: build/BMWAmbientControl-unsigned.ipa
+          if-no-files-found: error
+  
