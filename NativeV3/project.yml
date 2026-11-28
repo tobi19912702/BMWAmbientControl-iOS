@@ -1,0 +1,19 @@
+name: BMWAmbientControl
+options:
+  deploymentTarget:
+    iOS: "16.0"
+targets:
+  BMWAmbientControl:
+    type: application
+    platform: iOS
+    sources:
+      - path: AmbientApp.swift
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: de.ambientcontrol.bmw
+        SWIFT_VERSION: "5.0"
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription: "Bluetooth wird zur Steuerung deiner Ambientebeleuchtung benötigt."
+        INFOPLIST_KEY_CFBundleDisplayName: "BMW Ambient Control"
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        TARGETED_DEVICE_FAMILY: "1"
