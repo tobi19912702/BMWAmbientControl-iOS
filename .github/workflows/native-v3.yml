@@ -1,0 +1,32 @@
+name: Native iOS V3
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'NativeV3/**'
+      - '.github/workflows/native-v3.yml'
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - run: brew install xcodegen
+      - name: Generate project
+        working-directory: NativeV3
+        run: xcodegen generate
+      - name: Compile unsigned app
+        working-directory: NativeV3
+        run: xcodebuild -project BMWAmbientControl.xcodeproj -scheme BMWAmbientControl -configuration Release -sdk iphoneos -destination 'generic/platform=iOS' -derivedDataPath build CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO build
+      - name: Package unsigned IPA
+        working-directory: NativeV3
+        run: |
+          mkdir -p Payload
+          cp -R build/Build/Products/Release-iphoneos/BMWAmbientControl.app Payload/
+          zip -qr BMWAmbientControl-unsigned.ipa Payload
+      - uses: actions/upload-artifact@v4
+        with:
+          name: BMWAmbientControl-unsigned
+          path: NativeV3/BMWAmbientControl-unsigned.ipa
+          if-no-files-found: error
